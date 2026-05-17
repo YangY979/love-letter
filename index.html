@@ -413,11 +413,63 @@ body {
     .letter-text { font-size: 12px; line-height: 1.7; }
     .letter-scroll { padding: 4px 6px 2px; }
 }
+
+/* ===== 返回按钮 ===== */
+.back-heart {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    left: max(16px, env(safe-area-inset-left, 16px));
+    width: 40px; height: 37px;
+    z-index: 20;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+    filter: drop-shadow(0 2px 8px rgba(255, 71, 87, 0.45));
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.back-heart.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.back-heart:active { transform: scale(0.85); }
+.back-h { position: relative; width: 100%; height: 100%; }
+.back-h::before, .back-h::after {
+    content: ''; position: absolute; top: 0;
+    width: 52%; height: 82%;
+    background: linear-gradient(135deg, #ff6b81, #ff4757);
+    border-radius: 50px 50px 0 0;
+}
+.back-h::before { left: 50%; transform: rotate(-45deg); transform-origin: 0 100%; }
+.back-h::after  { left: 0;  transform: rotate(45deg);  transform-origin: 100% 100%; }
+.back-arrow {
+    position: absolute; z-index: 1;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff; font-size: 16px; font-weight: bold;
+    line-height: 1; user-select: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+@media (max-width: 768px) {
+    .back-heart {
+        width: clamp(32px, 10vw, 40px);
+        height: clamp(29px, 9vw, 37px);
+        bottom: max(14px, env(safe-area-inset-bottom, 14px));
+        left: max(10px, env(safe-area-inset-left, 10px));
+    }
+    .back-arrow { font-size: clamp(12px, 4vw, 16px); }
+}
 </style>
 </head>
 <body>
 
 <div class="bg-hearts-layer" id="bgHearts"></div>
+
+<div class="back-heart" id="backHeart" title="返回">
+    <div class="back-h"></div>
+    <span class="back-arrow">&#x2190;</span>
+</div>
 
 <audio id="bgm" src="bgm.mp3" loop preload="auto" style="display:none;"></audio>
 
@@ -547,6 +599,9 @@ heartSeal.addEventListener('click', function(e) {
     setTimeout(function() {
         cornerHeart.classList.add('show');
     }, 1500);
+    setTimeout(function() {
+        backHeart.classList.add('show');
+    }, 1200);
 });
 
 /* 步骤2：点击右下角爱心 */
@@ -554,7 +609,39 @@ cornerHeart.addEventListener('click', function(e) {
     if (state !== 1) return;
     state = 2;
     e.stopPropagation();
+    backHeart.classList.add('show');
     startBigHeart();
+});
+
+/* 返回按钮 */
+var backHeart = document.getElementById('backHeart');
+function goBack() {
+    if (state === 2) {
+        state = 1;
+        bigHeartScene.classList.remove('active');
+        bigHeartWrapper.classList.remove('beating');
+        bigHeartWrapper.innerHTML = '';
+        mainContainer.classList.remove('fade-out');
+        backHeart.classList.add('show');
+        setTimeout(function() {
+            cornerHeart.classList.add('show');
+        }, 400);
+    } else if (state === 1) {
+        state = 0;
+        backHeart.classList.remove('show');
+        letterCard.classList.remove('revealed');
+        cornerHeart.classList.remove('show');
+        envelopeWrapper.classList.remove('discard');
+        setTimeout(function() {
+            heartSeal.classList.remove('hidden');
+            envelopeFlap.classList.remove('open');
+            bottomText.classList.remove('hidden');
+        }, 400);
+    }
+}
+backHeart.addEventListener('click', function(e) {
+    e.stopPropagation();
+    goBack();
 });
 
 /* 爱心曲线 */
@@ -654,9 +741,9 @@ function startBigHeart() {
 
     setTimeout(function() {
         list.forEach(function(el, i) {
-            setTimeout(function() { el.style.opacity = '1'; }, i * 2);
+            setTimeout(function() { el.style.opacity = '1'; }, i * 1);
         });
-    }, 150);
+    }, 100);
 
     setTimeout(function() {
         list.forEach(function(el, i) {
@@ -664,11 +751,11 @@ function startBigHeart() {
                 el.style.left = el.dataset.tx + 'px';
                 el.style.top = el.dataset.ty + 'px';
                 el.style.transform = 'translate(-50%, -50%)';
-            }, i * 7);
+            }, i * 3);
         });
     }, 500);
 
-    var total = 500 + list.length * 7 + 1500 + 300;
+    var total = 500 + list.length * 3 + 1000 + 300;
     setTimeout(function() {
         bigHeartWrapper.classList.add('beating');
         falling();

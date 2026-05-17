@@ -327,9 +327,16 @@ body {
 .form-heart {
     position: absolute;
     color: #ff4757;
-    transition: all 1.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: left 1.2s cubic-bezier(0.22, 0.61, 0.36, 1),
+                top 1.2s cubic-bezier(0.22, 0.61, 0.36, 1),
+                opacity 0.6s ease,
+                transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
     pointer-events: none;
+    will-change: transform, opacity, left, top;
+}
+.form-heart.outline {
     filter: drop-shadow(0 2px 4px rgba(255, 71, 87, 0.35));
+    color: #ff4757;
 }
 
 .falling-heart {
@@ -669,7 +676,7 @@ function startBigHeart() {
         var sx = Math.cos(a) * d, sy = Math.sin(a) * d;
 
         var el = document.createElement('span');
-        el.className = 'form-heart';
+        el.className = 'form-heart outline';
         el.textContent = '\u2665';
         el.style.left = sx + 'px';
         el.style.top = sy + 'px';
